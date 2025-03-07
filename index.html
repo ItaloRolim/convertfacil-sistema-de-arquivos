@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ConvertFácil - PDF para Excel</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.0/lottie.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <h1 class="ml-2 text-2xl font-bold text-gray-900">ConvertFácil</h1>
+        </div>
+        <div>
+          <button id="historyBtn" class="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Histórico
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+      <div class="max-w-3xl mx-auto">
+        <!-- Main Card -->
+        <div id="mainCard" class="bg-white rounded-xl shadow-lg p-8">
+          <h2 class="text-center text-2xl font-semibold text-gray-800 mb-6">Converta arquivos PDF para Excel</h2>
+          <p class="text-center text-gray-600 mb-8">Arraste e solte seu arquivo PDF ou clique para selecionar</p>
+
+          <!-- File Upload Area -->
+          <div id="dropZone" class="drop-zone h-64 flex flex-col items-center justify-center p-6 mb-8 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <p class="text-gray-500 text-center">Solte seu arquivo PDF aqui ou <span
+                class="text-blue-500 font-medium">clique para selecionar</span></p>
+            <input type="file" id="fileInput" accept=".pdf" class="hidden" />
+          </div>
+
+          <!-- Selected File Info -->
+          <div id="fileInfo" class="hidden mb-8 p-4 bg-blue-50 rounded-lg">
+            <div class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div class="ml-4 flex-grow">
+                <h3 id="fileName" class="font-medium text-gray-900">documento.pdf</h3>
+                <p id="fileSize" class="text-sm text-gray-500">231 KB</p>
+              </div>
+              <button id="removeFile" class="text-gray-400 hover:text-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Convert Button -->
+          <div class="text-center">
+            <button id="convertBtn"
+              class="btn-primary text-white px-8 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hidden">
+              Converter para Excel
+            </button>
+          </div>
+        </div>
+
+        <!-- Processing Card -->
+        <div id="processingCard" class="hidden bg-white rounded-xl shadow-lg p-8 text-center">
+          <h2 class="text-2xl font-semibold text-gray-800 mb-6">Convertendo seu arquivo</h2>
+          <div class="animation-container" id="loadingAnimation"></div>
+          <p class="text-gray-600 mt-4">Por favor, aguarde enquanto processamos seu arquivo.</p>
+        </div>
+
+        <!-- Success Card -->
+        <div id="successCard" class="hidden bg-white rounded-xl shadow-lg p-8 text-center">
+          <div class="animation-container" id="successAnimation"></div>
+          <h2 class="text-2xl font-semibold text-gray-800 mb-4">Conversão concluída!</h2>
+          <p class="text-gray-600 mb-8">Seu arquivo foi convertido com sucesso para o formato Excel.</p>
+          <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a id="downloadBtn" href="#" download
+              class="btn-primary text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Baixar Excel
+            </a>
+            <button id="newConversionBtn"
+              class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Nova conversão
+            </button>
+          </div>
+        </div>
+
+        <!-- History Panel -->
+        <div id="historyPanel" class="hidden bg-white rounded-xl shadow-lg p-8 mt-8">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-semibold text-gray-800">Histórico de conversões</h2>
+            <button id="closeHistoryBtn" class="text-gray-400 hover:text-gray-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div id="historyItems" class="space-y-4">
+            <!-- History items will be added dynamically -->
+          </div>
+
+          <div id="emptyHistory" class="text-center py-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-gray-500">Nenhuma conversão realizada ainda</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-6">
+      <div class="container mx-auto px-4">
+        <p class="text-center text-gray-500 text-sm">© 2025 ConvertFácil.</p>
+      </div>
+    </footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+
+</html>
